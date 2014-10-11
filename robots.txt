@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://changety.github.io/sitemap.xml 
+Sitemap: {{ site.url }}/sitemap.xml 
