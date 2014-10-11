@@ -3,7 +3,7 @@
 # ----------------------- #
 
 url: http://changety.github.io
-title: grace blog
+title: test grace blog
 subtitle: A blogging framework for hacker.
 author: Bian
 simple_search: https://www.google.com/search
@@ -90,9 +90,10 @@ pinboard_count: 3
 delicious_user:
 delicious_count: 3
 
+
 # Disqus Comments
-disqus_short_name:
-disqus_show_comment_count: false
+disqus_short_name: ibiandev
+disqus_show_comment_count: true
 
 # Google Analytics
 google_analytics_tracking_id:
