@@ -3,11 +3,11 @@
 # ----------------------- #
 
 url: http://changety.github.io
-title: test grace blog
-subtitle: A blogging framework for hacker.
-author: Bian
-simple_search: https://www.google.com/search
-description:
+title: Bian's blog
+subtitle: as a time machine
+author: BianYuting
+simple_search: https://www.google.com.hk/search
+description: be the change you want to see in the world
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
@@ -64,7 +64,7 @@ default_asides: [asides/recent_posts.html, asides/github.html, asides/delicious.
 # ----------------------- #
 
 # Github repositories
-github_user:
+github_user: changety
 github_repo_count: 0
 github_show_profile_link: true
 github_skip_forks: true
@@ -100,3 +100,11 @@ google_analytics_tracking_id:
 
 # Facebook Like
 facebook_like: false
+
+# weibo 
+weibo_user: changety # 微博数字 ID 或域名 ID
+weibo_share: true
+
+
+
+
