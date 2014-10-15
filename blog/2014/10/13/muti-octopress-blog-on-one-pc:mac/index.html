@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>一台mac如何维护两个octopress blog - Bian&#8217;s blog</title>
+	<title>一台mac维护多个octopress blog - Bian&#8217;s blog</title>
 	<meta name="author" content="BianYuting">
 
 	
-	<meta name="description" content="一台mac如何维护两个octopress Blog 前言 上篇介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress， &hellip;">
+	<meta name="description" content="一台mac维护多个octopress Blog 前言 上篇介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在此目录下维护第二个blog &hellip;">
 	
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,14 +76,14 @@
 			
 			<div class="mid-col-container">
 				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-	<h1 class="title" itemprop="name">一台mac如何维护两个octopress Blog</h1>
+	<h1 class="title" itemprop="name">一台mac维护多个octopress Blog</h1>
 	<div class="entry-content" itemprop="articleBody"><h1>前言</h1>
 
-<h2>上篇介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在目录下维护第二个blog，以下是具体流程。</h2>
+<h2><a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">上篇</a>介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在此目录下维护第二个blog，以下是具体流程。</h2>
 
 <h1>创建第二个octopress blog的repo</h1>
 
-<h2>github不支持同一个账户创建多个两个github page的repo， 因此再去申请一个github帐号就可以了，然后依然是首先到<a href="https://github.com/new">github</a>创建一个<code>username.github.io</code>的repo，<code>username.github.io</code>以后就是blog的域名（当然他支持使用自定义的域名）， username就是你在github上的username。</h2>
+<h2>github不支持同一个账户创建多个github page的repo， 因此再去申请另一个github帐号就可以了，然后依然是首先到<a href="https://github.com/new">github</a>创建一个<code>anotherUsername.github.io</code>的repo，<code>anotherUsername.github.io</code>以后就是第二个blog的域名</h2>
 
 <h1>准备安装Octopress所需的环境</h1>
 
@@ -101,21 +101,21 @@
 
 <h1>安装第二个Octopress</h1>
 
-<p>一般第一个octopress一般都装在 <code>cd ~/octopress</code> 下，这里假设把第二个octopress安装在 <code>~/secondBlog/octopress</code>下</p>
+<p>一般第一个octopress一般都装在 <code>cd ~/octopress</code> 下，这里假设把第二个octopress安装在 <code>~/anotherBlog/octopress</code>下</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>$ cd ~
-</span><span class='line'>$ mkdir secondBlog #作为第二个octopress所在目录
-</span><span class='line'>$ cd secondBlog
+</span><span class='line'>$ mkdir anotherBlog #作为第二个octopress所在目录
+</span><span class='line'>$ cd anotherBlog
 </span><span class='line'>$ git clone git://github.com/imathis/octopress.git octopress </span></code></pre></td></tr></table></div></figure>
 
 
 <h3>同样安装完依赖跟默认主题</h3>
 
-<p>首先查看一下<code>~/secondBlog/octopress</code>下的ruby版本：</p>
+<p>首先查看一下<code>~/anotherBlog/octopress</code>下的ruby版本：</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>$ruby --version #如果跟第一个octopress所在目录下version版本一致即可，不一样的话，参考第一篇中介绍rbenv 环境变量的设置</span></code></pre></td></tr></table></div></figure>
@@ -138,7 +138,7 @@
 
 <hr />
 
-<p>运行以下命令，仔细看提示完成github和Octopress的关联（就是第一步创建的第二个博客的repo <a href="https://github.com/username/username.github.io">https://github.com/username/username.github.io</a></p>
+<p>运行以下命令，仔细看提示完成github和Octopress的关联（就是第一步创建的第二个博客的repo <a href="https://github.com/anotherUsername/anotherUsername.github.io">https://github.com/anotherUsername/anotherUsername.github.io</a></p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>$ rake setup_github_pages</span></code></pre></td></tr></table></div></figure>
@@ -159,27 +159,23 @@
 <span class='line-number'>4</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>octopress    git://github.com/imathis/octopress.git (fetch)
 </span><span class='line'>octopress git://github.com/imathis/octopress.git (push)
-</span><span class='line'>origin    https://github.com/secondUsername/secondUsername.github.io (fetch)
-</span><span class='line'>origin    https://github.com/secondUsername/secondUsername.github.io (push)</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>origin    https://github.com/anotherUsername/anotherUsername.github.io (fetch)
+</span><span class='line'>origin    https://github.com/anotherUsername/anotherUsername.github.io (push)</span></code></pre></td></tr></table></div></figure>
 
 
-<h3>接下来生成blog,本地preview一下第二个blig吧</h3>
+<h3>接下来生成blog</h3>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>$ rake generate
 </span><span class='line'>
-</span><span class='line'>$ rake preview #http://localhost：4000</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>$ rake preview #http://localhost:4000# ，preview一下另一个blog</span></code></pre></td></tr></table></div></figure>
 
 
-<p>打开<a href="http://localhost%EF%BC%9A4000">http://localhost：4000</a>，就能看到第二个octopress 也建起来了。</p>
+<p>打开<a href="http://localhost:4000">http://localhost:4000/</a>，就能看到第二个octopress blog也建起来了。</p>
 
-<h2>至此第二个octopress blog 就搭建完了，就可以在一台mac下同时维护两个blog了，之后写blog、装插件、换配置就都一样了，够折腾吧- -!</h2>
-
-<p>以上便是创建一个github的全部过程了，下一篇会继续说明如果在一台电脑上管理多个octpress blog 以及 一个octopress在多台电脑上共同维护的方法。</p>
-
-<hr />
+<h2>至此第二个octopress blog 就搭建完了，就可以在一台mac下同时维护多个blog了，之后写blog、装插件、换配置就都一样了。够折腾吧- -!</h2>
 </div>
 
 </article>
