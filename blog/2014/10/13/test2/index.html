@@ -1,0 +1,247 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>一台mac维护多个octopress blog - Bian&#8217;s blog</title>
+	<meta name="author" content="BianYuting">
+
+	
+	<meta name="description" content="一台mac维护多个octopress Blog 前言 上篇介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在此目录下维护第二个blog &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Bian's blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://changety.github.io/blog/2014/10/13/test2/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="	http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js"></script>
+	<link href="/stylesheets/google-fonts.css" rel="stylesheet" type="text/css">
+	
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		document.write("<img alt='Profile Picture' src='/images/avatar.png' style='width:160px;'/>");
+	</script>
+</div>
+<h1><a href="/">Bian&#8217;s blog</a></h1>
+<p class="subtitle">as a time machine</p>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Home</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+	<li><a href="/aboutme">About</a></li>
+</ul>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		<a class="weibo" href="http://www.weibo.com/changety" title="Weibo">Weibo</a>
+		
+		
+		
+		
+		
+		<a class="github" href="https://github.com/changety" title="GitHub">GitHub</a>
+		
+		
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+<p class="description">be the change you want to see in the world</p>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">一台mac维护多个octopress Blog</h1>
+	<div class="entry-content" itemprop="articleBody"><h1>前言</h1>
+
+<h2><a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">上篇</a>介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在此目录下维护第二个blog，以下是具体流程。</h2>
+
+<h1>创建第二个octopress blog的repo</h1>
+
+<h2>github不支持同一个账户创建多个github page的repo， 因此再去申请另一个github帐号就可以了，然后依然是首先到<a href="https://github.com/new">github</a>创建一个<code>anotherUsername.github.io</code>的repo，<code>anotherUsername.github.io</code>以后就是第二个blog的域名</h2>
+
+<h1>准备安装Octopress所需的环境</h1>
+
+<p>由于有了第一个octopress blog的安装基础， 因此默认认为mac上已经有了octopress的环境：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ git --version</span></code></pre></td></tr></table></div></figure>
+
+
+<p>git的版本号对安装octopress影响不大，这里不用关心，只要有git工具就可以了。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ ruby --version #此时应该已是1.9.3p125 (2012-02-16 revision 34643)，或者其他你成功安装了octopress的ruby版本</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>安装第二个Octopress</h1>
+
+<p>一般第一个octopress一般都装在 <code>cd ~/octopress</code> 下，这里假设把第二个octopress安装在 <code>~/anotherBlog/octopress</code>下</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ cd ~
+</span><span class='line'>$ mkdir anotherBlog #作为第二个octopress所在目录
+</span><span class='line'>$ cd anotherBlog
+</span><span class='line'>$ git clone git://github.com/imathis/octopress.git octopress </span></code></pre></td></tr></table></div></figure>
+
+
+<h3>同样安装完依赖跟默认主题</h3>
+
+<p>首先查看一下<code>~/anotherBlog/octopress</code>下的ruby版本：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ruby --version #如果跟第一个octopress所在目录下version版本一致即可，不一样的话，参考第一篇中介绍rbenv 环境变量的设置</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ gem install bundler
+</span><span class='line'>$ rbenv rehash
+</span><span class='line'>$ bundle install
+</span><span class='line'>
+</span><span class='line'>$ rake install #默认主题
+</span></code></pre></td></tr></table></div></figure>
+
+
+<hr />
+
+<p>运行以下命令，仔细看提示完成github和Octopress的关联（就是第一步创建的第二个博客的repo <a href="https://github.com/anotherUsername/anotherUsername.github.io">https://github.com/anotherUsername/anotherUsername.github.io</a></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ rake setup_github_pages</span></code></pre></td></tr></table></div></figure>
+
+
+<p>关联成功后可以看下：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ git remote -v #关联的远程repo信息
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>正确关联的话就会如下显示：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>octopress    git://github.com/imathis/octopress.git (fetch)
+</span><span class='line'>octopress git://github.com/imathis/octopress.git (push)
+</span><span class='line'>origin    https://github.com/anotherUsername/anotherUsername.github.io (fetch)
+</span><span class='line'>origin    https://github.com/anotherUsername/anotherUsername.github.io (push)</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>接下来生成blog,本地preview一下第二个blig吧</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ rake generate
+</span><span class='line'>
+</span><span class='line'>$ rake preview #http://localhost：4000</span></code></pre></td></tr></table></div></figure>
+
+
+<p>打开<a href="http://localhost:4000">http://localhost:4000/</a>，就能看到第二个octopress 也建起来了。</p>
+
+<h2>至此第二个octopress blog 就搭建完了，就可以在一台mac下同时维护多个blog了，之后写blog、装插件、换配置就都一样了。够折腾吧- -!</h2>
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style addthis_16x16_style">
+	
+	<a class="addthis_button_sinaweibo"></a>
+	
+	
+	
+	<a class="addthis_button_twitter"></a>
+	
+	
+	
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h1 class="title">Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+
+    BianYuting
+
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'ibiandev';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://changety.github.io/blog/2014/10/13/test2/';
+        var disqus_url = 'http://changety.github.io/blog/2014/10/13/test2/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>

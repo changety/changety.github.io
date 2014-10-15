@@ -81,7 +81,7 @@
 	<div class="entry-content" itemprop="articleBody"><h1>前言</h1>
 
 <p>前段时间云音乐Android小组打算自己搭建一个blog，用于总结跟记录工作中遇到的技术问题。之前自己在其他地方记录过几篇blog，也一直想搭个blog的玩玩，借此机会正好操练。
-出于对Github极大的好感，自然就想到利用Github Page服务搭建一个blog，网络上已经存在大量关于利用Github与Octopress搭建blog的文章，但是质量参次不齐，实际我在搭建的过程中就遇到了不少问题，这里记录一下其他文章中忽略的一些细节，帮助同样碰到相同问题的同学节省时间。可能少有人会跟我一样折腾，打算在一台mac上维护两个octopress blog、其中一个octopress blog还需要在多台设备上一起更新（android 小组），因此这篇blog先介绍创建一个常规octopress blog的步骤，之后再调整一下one device to multi octopress blogs &amp; one octopress blog to multi devices的正确姿势。</p>
+出于对Github极大的好感，自然就想到利用Github Page服务搭建一个blog，网络上已经存在大量关于利用Github与Octopress搭建blog的文章，但是质量参次不齐，实际我在搭建的过程中就遇到了不少问题，这里记录一下其他文章中忽略的一些细节，梳理一下流程，同时帮碰到相同问题的同学节省时间。可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog、其中一个octopress blog 还需要在多台设备上一起更新（android 小组），因此这篇blog先介绍创建一个常规octopress blog的步骤，之后再介绍下一台电脑上维护两个octopress blog 以及 一个octopress blog 在多个地方(电脑)上更新的方法。</p>
 
 <hr />
 
@@ -93,7 +93,7 @@
 
 <h1>节省漫长的十多分钟等待时间</h1>
 
-<p>首先到<a href="https://github.com/new">github</a>创建一个<code>username.github.io</code>的repo，<code>username.github.io</code>以后就是blog的域名（当然他支持使用自定义的域名）， username就是你在github上的username。之所以先完成这一步，是因为github一般需要10分钟左右来同步缓存数据，有高清图为证：</p>
+<p>首先到<a href="https://github.com/new">github</a>创建一个<code>username.github.io</code>的repo，<code>username.github.io</code>以后就是blog的域名（当然他支持使用自定义的域名）， username就是你在github上的username。之所以先完成这一步，是因为github一般需要10分钟左右来同步缓存数据，一般创建完repo后，直接访问，浏览器会告诉你这个：</p>
 
 <p><img src="/images/why_this_first.png"></p>
 
@@ -336,7 +336,7 @@ Zsh note: Modify your ~/.zshrc file instead of ~/.bash_profile.</p>
 </span><span class='line'>$ rake deploy</span></code></pre></td></tr></table></div></figure>
 
 
-<p>以上便是创建一个github的全部过程了，下一篇会继续说明如果在一台电脑上管理多个octpress blog 以及 一个octopress在多台电脑上共同维护的方法。</p>
+<p>以上便是创建一个octopress blog的全部过程了，下一篇会继续说明如果在一台电脑上管理多个octpress blog 以及 一个octopress在多台电脑上共同维护的方法。</p>
 
 <hr />
 
