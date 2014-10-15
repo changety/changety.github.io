@@ -4,7 +4,7 @@ title: "使用github page与octopress搭建个人blog"
 subtitle : "Blog based on Github page & Octopress"
 date: 2014-10-12 03:00:00 +0800
 comments: true
-categories: [octpress]
+categories: [octopress]
 ---
 
 #前言
