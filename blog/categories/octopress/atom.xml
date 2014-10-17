@@ -4,7 +4,7 @@
   <title><![CDATA[Category: octopress | Bian's blog]]></title>
   <link href="http://changety.github.io/blog/categories/octopress/atom.xml" rel="self"/>
   <link href="http://changety.github.io/"/>
-  <updated>2014-10-16T01:11:15+08:00</updated>
+  <updated>2014-10-18T01:25:38+08:00</updated>
   <id>http://changety.github.io/</id>
   <author>
     <name><![CDATA[BianYuting]]></name>
@@ -12,6 +12,139 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[octopress blog由多台设备维护]]></title>
+    <link href="http://changety.github.io/blog/2014/10/15/one-octopress-blog-on-mutil-place/"/>
+    <updated>2014-10-15T00:11:52+08:00</updated>
+    <id>http://changety.github.io/blog/2014/10/15/one-octopress-blog-on-mutil-place</id>
+    <content type="html"><![CDATA[<h1>前言</h1>
+
+<p><a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">之前这篇</a>介绍了如何在mac下部署octopress，<a href="http://changety.github.io/blog/2014/10/13/muti-octopress-blog-on-one-pc:mac/">这篇</a>还介绍了一台mac上维护同时维护多个octopress的方法，本篇再介绍一下如何再多台设备上，同时维护一个octopress blog上的方法。</p>
+
+<hr />
+
+<h1>octopress blog的repo分支说明</h1>
+
+<p>一个octopress blog的repo由source、master两个分支组成。</p>
+
+<p>source分支位于 <code>cd ~/octopress</code> 中</p>
+
+<pre><code>cd ~/octopress
+git branch # *source
+</code></pre>
+
+<p>这个分支用于存放markdown源文件，theme，plugin等用于生成blog所需要的所有文件的，因此之前我们写博客的时候，提交的内容，一般都到在source上：</p>
+
+<pre><code>git push origin source #即将本地内容push到远端git repo 的source分支上。
+</code></pre>
+
+<p>master分支位于 <code>cd ~/octopress/_deploy</code>中，这个分支用于存放blog站点本身</p>
+
+<pre><code>cd ~/octopress/_deploy
+git branch # *master
+</code></pre>
+
+<hr />
+
+<h1>在新的设备上部署已有的octopress</h1>
+
+<p>首先像构建全新octopress 一样， 准备好octopress的部署环境</p>
+
+<pre><code>$ git --version
+</code></pre>
+
+<p>git的版本号对安装octopress影响不大，这里不用关心，只要有git工具就可以了。</p>
+
+<pre><code>$ ruby --version #shold be 1.9.3#p125 or other version can be set up an octopress
+</code></pre>
+
+<p>配置环境的方法参考<a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">这里</a></p>
+
+<p>理解octopress blog的工作原理以及分支组成后，新的设备复制已有的octopress blog 只要把source/master clone到本地，并安装完成类似构建新octopress blog一样的配置及工具即可。以下是具体步骤：</p>
+
+<h3>将source分支 clone到 octopress目录下</h3>
+
+<pre><code>git clone -b source git@github.com:username/username.github.com.git octopress 
+</code></pre>
+
+<h3>将master分支 clone到 octopress/_deploy目录下</h3>
+
+<pre><code>$ cd octopress #进入到octopress目录下，看看_deploy是否存在，存在的话且不为空，先清空
+$ git clone git@github.com:username/username.github.com.git _deploy  #clone master分支
+</code></pre>
+
+<h3>安装配置工作</h3>
+
+<pre><code>$ gem install bundler
+$ rbenv rehash
+$ bundle install
+</code></pre>
+
+<p>注意：由于远端的blog可能已经配置主题、所以省去安装默认主题的这一步： <code>rake install</code></p>
+
+<h3>关联blog</h3>
+
+<pre><code>rake setup_github_pages
+</code></pre>
+
+<p>提示你输入关联的repo的 git url</p>
+
+<pre><code>Enter the read/write url for your repository
+</code></pre>
+
+<p>输入需要关联的repo的git url即可， 比如 git@github.com:username/username.github.com</p>
+
+<p>关联完成后，检查一下：</p>
+
+<pre><code>git remote -v
+
+octopress   git://github.com/imathis/octopress.git (fetch)
+octopress   git://github.com/imathis/octopress.git (push)
+origin  https://github.com/username/username.github.io (fetch)  #关联blog 的远程 repo
+origin  https://github.com/username/username.github.io (push)
+</code></pre>
+
+<p>至此，如果没有错误的话，本地已经完成了一个已有octopress blog复制跟关联。</p>
+
+<h1>在两台设备上写blog</h1>
+
+<p>接下来其实就与git 上共同开发项目一样，首先需要pull下来最新的远端repo的内容，本地做出修改后，也要将内容push到远端。每次同步与提交，都要把source/master两个分支的同步。</p>
+
+<p>比如新部署完成的 <code>A电脑</code>上写一篇文章：</p>
+
+<pre><code>rake new_post['new post on new computer']
+
+git add .
+git commit -m 'create a new post in new compter'
+git push origin source #push source内容到repo上
+
+rake deploy 发布blog
+</code></pre>
+
+<p>切到另一台<code>B电脑</code>上：</p>
+
+<pre><code>cd octopress
+git pull origin source  # 同步source分支
+cd octopress/_deploy
+git pull origin master  # 同步master分支， 因为之前rake dedploy会修改master的内容
+</code></pre>
+
+<p>此后，在这台<code>B电脑</code>上修改并且 <code>rake deploy</code>后，在<code>A电脑</code>上也需要先pull 完两个分支的内容。</p>
+
+<h3>总结:</h3>
+
+<h4>1.pull source 分支、pull master分支</h4>
+
+<h4>2.写文章、改主题&hellip;&hellip; (git commit)</h4>
+
+<h4>3.git push origin source</h4>
+
+<h4>4.rake deploy（相当于push到远端master分支）</h4>
+
+<hr />
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一台mac维护多个octopress blog]]></title>

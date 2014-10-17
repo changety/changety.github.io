@@ -1,0 +1,308 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>octopress blog由多台设备维护 - Bian&#8217;s blog</title>
+	<meta name="author" content="BianYuting">
+
+	
+	<meta name="description" content="Octopress Blog由多台设备维护 前言 之前这篇介绍了如何在mac下部署octopress，这篇还介绍了一台mac上维护同时维护多个octopress的方法，本篇再介绍一下如何再多台设备上，同时维护一个octopress blog上的方法。 octopress &hellip;">
+	
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Bian's blog" type="application/atom+xml">
+	
+	<link rel="canonical" href="http://changety.github.io/blog/2014/10/15/one-octopress-blog-on-mutil-place/">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="	http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js"></script>
+	<link href="/stylesheets/google-fonts.css" rel="stylesheet" type="text/css">
+	
+</head>
+
+
+<body>
+	<div class="container">
+		<div class="left-col">
+			<div class="intrude-less">
+			<header id="header" class="inner"><div class="profilepic">	
+	<script src="/javascripts/md5.js"></script>
+	<script type="text/javascript">
+		document.write("<img alt='Profile Picture' src='/images/avatar.png' style='width:160px;'/>");
+	</script>
+</div>
+<h1><a href="/">Bian&#8217;s blog</a></h1>
+<p class="subtitle">as a time machine</p>
+<nav id="main-nav"><ul class="main">
+	<li><a href="/">Home</a></li>
+	<li><a href="/blog/archives">Archives</a></li>
+	<li><a href="/aboutme">About</a></li>
+</ul>
+</nav>
+<nav id="sub-nav">
+	<div class="social">
+		
+		<a class="weibo" href="http://www.weibo.com/changety" title="Weibo">Weibo</a>
+		
+		
+		
+		
+		
+		<a class="github" href="https://github.com/changety" title="GitHub">GitHub</a>
+		
+		
+		
+		
+		
+		
+		
+		<a class="rss" href="/atom.xml" title="RSS">RSS</a>
+		
+	</div>
+</nav>
+<p class="description">be the change you want to see in the world</p>
+</header>				
+			</div>
+		</div>	
+		<div class="mid-col">
+			
+				
+			
+			<div class="mid-col-container">
+				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<h1 class="title" itemprop="name">Octopress Blog由多台设备维护</h1>
+	<div class="entry-content" itemprop="articleBody"><h1>前言</h1>
+
+<p><a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">之前这篇</a>介绍了如何在mac下部署octopress，<a href="http://changety.github.io/blog/2014/10/13/muti-octopress-blog-on-one-pc:mac/">这篇</a>还介绍了一台mac上维护同时维护多个octopress的方法，本篇再介绍一下如何再多台设备上，同时维护一个octopress blog上的方法。</p>
+
+<hr />
+
+<h1>octopress blog的repo分支说明</h1>
+
+<p>一个octopress blog的repo由source、master两个分支组成。</p>
+
+<p>source分支位于 <code>cd ~/octopress</code> 中</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/octopress
+</span><span class='line'>git branch # *source</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个分支用于存放markdown源文件，theme，plugin等用于生成blog所需要的所有文件的，因此之前我们写博客的时候，提交的内容，一般都到在source上：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git push origin source #即将本地内容push到远端git repo 的source分支上。</span></code></pre></td></tr></table></div></figure>
+
+
+<p>master分支位于 <code>cd ~/octopress/_deploy</code>中，这个分支用于存放blog站点本身</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/octopress/_deploy
+</span><span class='line'>git branch # *master</span></code></pre></td></tr></table></div></figure>
+
+
+<hr />
+
+<h1>在新的设备上部署已有的octopress</h1>
+
+<p>首先像构建全新octopress 一样， 准备好octopress的部署环境</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ git --version</span></code></pre></td></tr></table></div></figure>
+
+
+<p>git的版本号对安装octopress影响不大，这里不用关心，只要有git工具就可以了。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ ruby --version #shold be 1.9.3#p125 or other version can be set up an octopress</span></code></pre></td></tr></table></div></figure>
+
+
+<p>配置环境的方法参考<a href="http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/">这里</a></p>
+
+<p>理解octopress blog的工作原理以及分支组成后，新的设备复制已有的octopress blog 只要把source/master clone到本地，并安装完成类似构建新octopress blog一样的配置及工具即可。以下是具体步骤：</p>
+
+<h3>将source分支 clone到 octopress目录下</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone -b source git@github.com:username/username.github.com.git octopress 
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>将master分支 clone到 octopress/_deploy目录下</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ cd octopress #进入到octopress目录下，看看_deploy是否存在，存在的话且不为空，先清空
+</span><span class='line'>$ git clone git@github.com:username/username.github.com.git _deploy  #clone master分支</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>安装配置工作</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ gem install bundler
+</span><span class='line'>$ rbenv rehash
+</span><span class='line'>$ bundle install</span></code></pre></td></tr></table></div></figure>
+
+
+<p>注意：由于远端的blog可能已经配置主题、所以省去安装默认主题的这一步： <code>rake install</code></p>
+
+<h3>关联blog</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rake setup_github_pages</span></code></pre></td></tr></table></div></figure>
+
+
+<p>提示你输入关联的repo的 git url</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Enter the read/write url for your repository
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>输入需要关联的repo的git url即可， 比如 git@github.com:username/username.github.com</p>
+
+<p>关联完成后，检查一下：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git remote -v
+</span><span class='line'>
+</span><span class='line'>octopress git://github.com/imathis/octopress.git (fetch)
+</span><span class='line'>octopress git://github.com/imathis/octopress.git (push)
+</span><span class='line'>origin    https://github.com/username/username.github.io (fetch)  #关联blog 的远程 repo
+</span><span class='line'>origin    https://github.com/username/username.github.io (push)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>至此，如果没有错误的话，本地已经完成了一个已有octopress blog复制跟关联。</p>
+
+<h1>在两台设备上写blog</h1>
+
+<p>接下来其实就与git 上共同开发项目一样，首先需要pull下来最新的远端repo的内容，本地做出修改后，也要将内容push到远端。每次同步与提交，都要把source/master两个分支的同步。</p>
+
+<p>比如新部署完成的 <code>A电脑</code>上写一篇文章：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rake new_post['new post on new computer']
+</span><span class='line'>
+</span><span class='line'>git add .
+</span><span class='line'>git commit -m 'create a new post in new compter'
+</span><span class='line'>git push origin source #push source内容到repo上
+</span><span class='line'>
+</span><span class='line'>rake deploy 发布blog</span></code></pre></td></tr></table></div></figure>
+
+
+<p>切到另一台<code>B电脑</code>上：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd octopress
+</span><span class='line'>git pull origin source  # 同步source分支
+</span><span class='line'>cd octopress/_deploy
+</span><span class='line'>git pull origin master  # 同步master分支， 因为之前rake dedploy会修改master的内容
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>此后，在这台<code>B电脑</code>上修改并且 <code>rake deploy</code>后，在<code>A电脑</code>上也需要先pull 完两个分支的内容。</p>
+
+<h3>总结:</h3>
+
+<h4>1.pull source 分支、pull master分支</h4>
+
+<h4>2.写文章、改主题&hellip;&hellip; (git commit)</h4>
+
+<h4>3.git push origin source</h4>
+
+<h4>4.rake deploy（相当于push到远端master分支）</h4>
+
+<hr />
+</div>
+
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style addthis_16x16_style">
+	
+	<a class="addthis_button_sinaweibo"></a>
+	
+	
+	
+	<a class="addthis_button_twitter"></a>
+	
+	
+	
+	<a class="addthis_button_compact"></a>
+	<a class="addthis_counter addthis_bubble_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h1 class="title">Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+</div>
+			</div>
+			<footer id="footer" class="inner">Copyright &copy; 2014
+
+    BianYuting
+
+
+Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Shashank Mehta</a></footer>
+			<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'ibiandev';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://changety.github.io/blog/2014/10/15/one-octopress-blog-on-mutil-place/';
+        var disqus_url = 'http://changety.github.io/blog/2014/10/15/one-octopress-blog-on-mutil-place/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+		</div>
+	</div>
+</body>
+</html>
