@@ -6,6 +6,7 @@ comments: true
 categories: octopress
 ---
 
+
 #前言
 [上篇](http://changety.github.io/blog/2014/10/12/setup-octopress-github-blog/)介绍了如何在mac下部署octopress，可能少有人会跟我一样折腾，还打算在一台mac上维护两个octopress blog，这里介绍一下具体办法，一言以蔽之就是在其他目录下再创建一个octopress，以后在此目录下维护第二个blog，以下是具体流程。
 ---------
@@ -87,5 +88,3 @@ $ rake preview #http://localhost:4000# ，preview一下另一个blog
 
 至此第二个octopress blog 就搭建完了，就可以在一台mac下同时维护多个blog了，之后写blog、装插件、换配置就都一样了。够折腾吧- -!
 ---------
-
-
