@@ -8,6 +8,7 @@ categories: Android Fresco decode Webp Jpeg
 
 #前言
 *之前的文章写过[webp图片的调研](http://changety.github.io/blog/2016/01/31/webp-research/)，这篇分析一下fresco的decoder部分的源码，同时从响应、下载、解码、大小四个指标上对比同一张图片的webp 与jpg格式。这里响应时间应该与图片格式本身没有关系，但这里为了对服务器接口做一个测试也加入了对比；下载时间应该与图片size成正相关，这里也加入对比，看看结果是否符合预期。根据google官网介绍，目前WebP与JPG相比较，编解码速度上，毫秒级别上：编码速度webp比jpg慢10倍，解码速度慢1.5倍。在我们的使用场景下，编码速度的影响可以被忽略，因为服务器会在用户第一次请求时，编码生成jpg图片对应的webp图片，之后都会被缓存下来，可以认为几乎所有用户的请求都能命中缓存。解码方面，则是每个用户拿到webp图片都必经的开销，因此解码速度是本次测试对比的关键指标。*
+------------
 
 #Fresco WebP支持
 我们的客户端使用的是[fresco](https://github.com/facebook/fresco)图片库，根据其[官方文档说明](http://frescolib.org/docs/webp-support.html#main_wrap)：
@@ -25,9 +26,9 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 ##Producer继承结构
 首先我们看一下Frecso中Producer的继承结构图：
 
-
-
-![fresco producer继承关系](http://upload-images.jianshu.io/upload_images/76332-66b1c9b26eb0033d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-66b1c9b26eb0033d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="600" height="600" alt="fresco producer继承关系"/>
+</div>
 
 ##Producer流水线
 
@@ -49,12 +50,13 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 |12|WebpTranscodeProducer|否|Transcodes WebP to JPEG / PNG|
 |13|**NetworkFetchProducer**|是|从网络上获取数据|
 ****
-<br />
+
 为了获得每一张网络图片的大小、响应时间、下载时间、decode时间，我们需要探索Fresco的源码，挂上钩子去得到这些指标；这里我们关心`DecoderProducer`、`NetworkFetchProducer`，顾名思义，这两个Producer分别用于解码和网络加载相关。
 
 ###DecodeProducer解码过程
 DecodeProducer负责将未解码的数据生产出解码的数据。先看produceResults方法。
-```  
+
+```java
   @Override
   public void produceResults(final Consumer<CloseableReference<CloseableImage>> consumer, final ProducerContext producerContext) {
     final ImageRequest imageRequest = producerContext.getImageRequest();
@@ -66,12 +68,14 @@ DecodeProducer负责将未解码的数据生产出解码的数据。先看produc
       progressiveDecoder = new NetworkImagesProgressiveDecoder(consumer, producerContext, jpegParser, mProgressiveJpegConfig, mDecodeCancellationEnabled);
     }
     mInputProducer.produceResults(progressiveDecoder, producerContext);
-  }```
+  }
+```
 
 通过判断uri的类型 选择不同的渐近式解释器，local和network都继承自ProgressiveDecoder
 
 在`ProgressiveDecoder`的构造方法中，doDecode(encodedImage, isLast) 进行解析。而真正解析的则是`ImageDecode`r#decodeImage方法，这个方法将encodedImage解析成`CloseableImage`：
-```Java
+
+```java
     /** Performs the decode synchronously. */
     private void doDecode(EncodedImage encodedImage, @Status int status) {
       if (isFinished() || !EncodedImage.isValid(encodedImage)) {
@@ -131,8 +135,11 @@ DecodeProducer负责将未解码的数据生产出解码的数据。先看produc
       }
     }
 ```
-因此我们在#doDecoder方法在decode前后插入解码时长计算。
-```
+
+因此我们在#doDecoder方法在decode前后插入解码时长计算:
+
+
+```java
   long nowTime = System.currentTimeMillis();
   image = mImageDecoder.decode(encodedImage, length, quality, mImageDecodeOptions);
   decodeDuration = System.currentTimeMillis() - nowTime;
@@ -159,9 +166,11 @@ DecodeProducer负责将未解码的数据生产出解码的数据。先看produc
   };
 ```  
 
+
 ####ImageFormatChecker
 这个类是根据输入流来确定图片的类型。基本原理是根据头标识去确定类型。根据代码能看出，这里分为几种。
-```
+
+```java
   public static final ImageFormat JPEG = new ImageFormat("JPEG", "jpeg");
   public static final ImageFormat PNG = new ImageFormat("PNG", "png");
   public static final ImageFormat GIF = new ImageFormat("GIF", "gif");
@@ -172,6 +181,7 @@ DecodeProducer负责将未解码的数据生产出解码的数据。先看produc
   public static final ImageFormat WEBP_EXTENDED_WITH_ALPHA = new ImageFormat("WEBP_EXTENDED_WITH_ALPHA", "webp");
   public static final ImageFormat WEBP_ANIMATED = new ImageFormat("WEBP_ANIMATED", "webp");
 ```
+
 本篇我们关心以下几种：
 - JPEG
 - WEBP_SIMPLE
@@ -185,6 +195,7 @@ DecodeProducer负责将未解码的数据生产出解码的数据。先看produc
 #### AnimatedImageFactory
 AnimatedImageFactory是一个接口，他的实现类是AnimatedImageFactoryImpl。
 在这个类的静态方法块种，通过如下代码 来构造其他依赖包中的对象，这个小技巧我们可以get一下。
+
 ```
   private static AnimatedImageDecoder loadIfPresent(final String className) {
     try {
@@ -222,7 +233,8 @@ getCloseableImage的逻辑如下：
 
 ![PlatformDecoder具体实现](http://upload-images.jianshu.io/upload_images/76332-37a7a0bdcb84bc8f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-```
+
+```java
 public interface PlatformDecoder {
   /**
    * Creates a bitmap from encoded bytes. Supports JPEG but callers should use {@link
@@ -260,7 +272,7 @@ pinBitmap 真正的decode
 #NetworkFetchProducer
 `NetworkFetchProducer`负责从网络层获取图片流，持有`NetworkFetcher`的实现类；测试代码中，我们添加了OkHttp3的`OkHttpNetworkFetcher`作为fetcher；我们关心`NetworkFetchProducer`中的这个方法：
 
-```
+```java
   private void handleFinalResult(PooledByteBufferOutputStream pooledOutputStream, FetchState fetchState) {
     Map<String, String> extraMap = getExtraMap(fetchState, pooledOutputStream.size());
     ProducerListener listener = fetchState.getListener();
@@ -269,6 +281,8 @@ pinBitmap 真正的decode
     notifyConsumer(pooledOutputStream, Consumer.IS_LAST | fetchState.getOnNewResultStatusFlags(), fetchState.getResponseBytesRange(), fetchState.getConsumer());
   }
 ```
+
+
 该方法中`FetchState`记录了一张图片从服务端响应到IO读取的耗时记录。同样的，也是通过`ProducerListener`的#onProducerFinishWithSuccess方法回调出去。
 
 #计算decode & fecth的时间
@@ -284,7 +298,8 @@ pinBitmap 真正的decode
 
 该方法会在`Producer`结束时回调出来，我们利用Fresco包里的`RequestLoggingListener`，便可监听到`DecoderProducer`和`NetworkFetchProducer`的回调。
 
-```
+
+```java
     @Override
     public void onCreate() {
         super.onCreate();
@@ -302,7 +317,8 @@ pinBitmap 真正的decode
 ```
 
 我们通过在Fresco初始化Builder中加入`RequestLoggingListener`，并改造`RequestLoggingListener`的onProducerFinishWithSuccess方法:
-```
+
+```java
   @Override
   public synchronized void onProducerFinishWithSuccess(String requestId, String producerName, @Nullable Map<String, String> extraMap) {
     if (FLog.isLoggable(FLog.VERBOSE)) {
@@ -317,11 +333,13 @@ pinBitmap 真正的decode
     }
   }
 ```
+
 通过将Producer的信息回调给外面，至此我们就拿到了每一个Producer的回调信息，通过producerName的过滤就可以拿到关心的信息，这里我们关心`DecoderProducer`和`NetworkFetchProducer`的信息。
 
 ###decode时间计算
 在`DecoderProducer`的doDecode方法中插入:
-```
+
+```java
  long nowTime = System.currentTimeMillis();
  image = mImageDecoder.decode(encodedImage, length, quality, mImageDecodeOptions);
  decodeDuration = System.currentTimeMillis() - nowTime;
@@ -330,13 +348,15 @@ decodeDuration放入onProducerFinishWithSuccess的extraMap当中
 
 ###network fecther时间计算
 `OkHttpNetworkFetcher`中定义着几个常量值：
-```
+
+```java
   public static final String QUEUE_TIME = "resp_time"; //修改为响应时间
   public static final String FETCH_TIME = "fetch_time";
   public static final String TOTAL_TIME = "total_time";
   public static final String IMAGE_SIZE = "image_size";
   public static final String IMAGE_URL = "image_url"; //新增
 ```
+
 - `QUEUE_TIME`为请求丢入请求线程池到最后请求成功响应的时间
 - `FETCH_TIME`为从response读完IO流的时间
 - `IMAGE_SIZE`为response header中的content-length，即图片大小
@@ -347,14 +367,15 @@ decodeDuration放入onProducerFinishWithSuccess的extraMap当中
 
 ##jpg&webp指标对比:
 
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-f960ec0cb0bed228.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="400" height="400" alt="jpg webp指标对比"/>
+</div>
 
-
-![jpg webp指标对比](http://upload-images.jianshu.io/upload_images/76332-f960ec0cb0bed228.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 |格式|图片数|大小|响应时间|下载时间|解码时间|总用时|
 |:--:|:--:|:--:|:--|:--:|:--:|:--:|
-|jpg|100|33497748B / 31.9MB|3384ms|5582ms|7225ms|16191ms
-|webp|100|11127628B / 10.6MB |3388ms|2552ms|9806ms|15746ms
+|jpg|100|33497748B / 31.9MB|3384ms|5582ms|7225ms|16191ms|
+|webp|100|11127628B / 10.6MB |3388ms|2552ms|9806ms|15746ms|
 
 以上数据经过几轮测试，都接近这个数据对比。 图片源来自项目线上的图片，图片接口来自公司CND接口，使用相同quality参数，带同一张图片的不同格式参数。解码总时间大概是JPG:WEBP = 1 : 1.3左右，接近官方的1.5倍性能差距。总大小上，webp几乎只有jpg的1/3，远超超官方的30%，这个估计是大多数jpg没有经过压缩就直接上传了。下载时间基本上与size成正比。
 
@@ -365,7 +386,9 @@ http://p1.music.126.net/6OARlbfxOysQJU5iZ8WKSA==/18769762999688243.jpg?imageView
 
 ##gif&anim-webp指标对比:
 
-![gif&anim-webp指标对比](http://upload-images.jianshu.io/upload_images/76332-114e6bf70693178d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-114e6bf70693178d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="400" height="400" alt="gif&anim-webp指标对比"/>
+</div>
 
 |格式|图片数|大小|响应时间|下载时间|解码时间|总用时|
 |:--:|:--:|:--:|:--|:--:|:--:|:--:|
@@ -378,12 +401,20 @@ http://p1.music.126.net/6OARlbfxOysQJU5iZ8WKSA==/18769762999688243.jpg?imageView
 [http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg?imageView=1&type=webp&tostatic=0](http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg?imageView=1&type=webp&tostatic=0)
 
 size压缩对比也接近1：3；另外这里的解码时间是不准确的，因为webp与gif在fresco中都是`AnimatedImage`，他们的decode调的是nativeCreateFromNativeMemory方法，这个方法返回是对应的`WebPImage` 与`GifImage`对象，表中的解码时间也是构建这个对象的耗时；动图渲染时，主要调用的是`AnimatedDrawableBackendImpl`中renderFrame方法。但我们可以粗略认为，每一帧的渲染耗时对比，接近jpg与webp的耗时；因为gif与anim-webp分别是由一帧一帧的jpg与webp组成。
+------------
 
 #总结
 
 webp与jpg相比，包括anim-webp与gif， 在相同的图片质量，图片大小上，webp有着巨大的优势，解码速度毫秒级的差距也完全在接收范围内， 而图片大小最终转化为带宽、存储空间、加载速度上的优势。因此在有条件的情况，app中完全可以用webp来替代jpg格式以提升加载速度、降低存储空间、节省带宽费用。另外在android上，使用fresco作为图片库，可以几乎无成本的接入webp。
+------------
 
-参考
-1.http://changety.github.io/blog/2016/01/31/webp-research/
-2.https://developers.google.com/speed/webp/faq
-3.https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/
+
+#参考
+webp图片介绍 http://changety.github.io/blog/2016/01/31/webp-research/
+
+webp常见问题 https://developers.google.com/speed/webp/faq
+
+fresco decode过程 https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/
+
+
+
