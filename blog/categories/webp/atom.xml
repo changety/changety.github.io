@@ -4,7 +4,7 @@
   <title><![CDATA[Category: webp | Bian's blog]]></title>
   <link href="http://changety.github.io/blog/categories/webp/atom.xml" rel="self"/>
   <link href="http://changety.github.io/"/>
-  <updated>2017-06-23T14:31:34+08:00</updated>
+  <updated>2017-06-23T14:53:37+08:00</updated>
   <id>http://changety.github.io/</id>
   <author>
     <name><![CDATA[BianYuting]]></name>
@@ -20,7 +20,7 @@
     <id>http://changety.github.io/blog/2017/06/20/fresco-jpg-webp-decode</id>
     <content type="html"><![CDATA[<h1>前言</h1>
 
-<p><em>之前的文章写过<a href="http://changety.github.io/blog/2016/01/31/webp-research/">webp图片的调研</a>，这篇分析一下fresco的decoder部分的源码，同时从响应、下载、解码、大小四个指标上对比同一张图片的webp 与jpg格式。这里响应时间应该与图片格式本身没有关系，但这里为了对服务器接口做一个测试也加入了对比；下载时间应该与图片size成正相关，这里也加入对比，看看结果是否符合预期。根据google官网介绍，目前WebP与JPG相比较，编解码速度上，毫秒级别上：编码速度webp比jpg慢10倍，解码速度慢1.5倍。在我们的使用场景下，编码速度的影响可以被忽略，因为服务器会在用户第一次请求时，编码生成jpg图片对应的webp图片，之后都会被缓存下来，可以认为几乎所有用户的请求都能命中缓存。解码方面，则是每个用户拿到webp图片都必经的开销，因此解码速度是本次测试对比的关键指标。</em></p>
+<h2><em>之前的文章写过<a href="http://changety.github.io/blog/2016/01/31/webp-research/">webp图片的调研</a>，这篇分析一下fresco的decoder部分的源码，同时从响应、下载、解码、大小四个指标上对比同一张图片的webp 与jpg格式。这里响应时间应该与图片格式本身没有关系，但这里为了对服务器接口做一个测试也加入了对比；下载时间应该与图片size成正相关，这里也加入对比，看看结果是否符合预期。根据google官网介绍，目前WebP与JPG相比较，编解码速度上，毫秒级别上：编码速度webp比jpg慢10倍，解码速度慢1.5倍。在我们的使用场景下，编码速度的影响可以被忽略，因为服务器会在用户第一次请求时，编码生成jpg图片对应的webp图片，之后都会被缓存下来，可以认为几乎所有用户的请求都能命中缓存。解码方面，则是每个用户拿到webp图片都必经的开销，因此解码速度是本次测试对比的关键指标。</em></h2>
 
 <h1>Fresco WebP支持</h1>
 
@@ -41,7 +41,10 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 
 <p>首先我们看一下Frecso中Producer的继承结构图：</p>
 
-<p><img src="http://upload-images.jianshu.io/upload_images/76332-66b1c9b26eb0033d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="fresco producer继承关系" /></p>
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-66b1c9b26eb0033d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="600" height="600" alt="fresco producer继承关系"/>
+</div>
+
 
 <h2>Producer流水线</h2>
 
@@ -141,14 +144,13 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 
 <hr />
 
-<p><br />
-为了获得每一张网络图片的大小、响应时间、下载时间、decode时间，我们需要探索Fresco的源码，挂上钩子去得到这些指标；这里我们关心<code>DecoderProducer</code>、<code>NetworkFetchProducer</code>，顾名思义，这两个Producer分别用于解码和网络加载相关。</p>
+<p>为了获得每一张网络图片的大小、响应时间、下载时间、decode时间，我们需要探索Fresco的源码，挂上钩子去得到这些指标；这里我们关心<code>DecoderProducer</code>、<code>NetworkFetchProducer</code>，顾名思义，这两个Producer分别用于解码和网络加载相关。</p>
 
 <h3>DecodeProducer解码过程</h3>
 
-<p>DecodeProducer负责将未解码的数据生产出解码的数据。先看produceResults方法。
-<code>  
-  @Override
+<p>DecodeProducer负责将未解码的数据生产出解码的数据。先看produceResults方法。</p>
+
+<pre><code class="java">  @Override
   public void produceResults(final Consumer&lt;CloseableReference&lt;CloseableImage&gt;&gt; consumer, final ProducerContext producerContext) {
     final ImageRequest imageRequest = producerContext.getImageRequest();
     ProgressiveDecoder progressiveDecoder;
@@ -159,144 +161,79 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
       progressiveDecoder = new NetworkImagesProgressiveDecoder(consumer, producerContext, jpegParser, mProgressiveJpegConfig, mDecodeCancellationEnabled);
     }
     mInputProducer.produceResults(progressiveDecoder, producerContext);
-  }</code></p>
+  }
+</code></pre>
 
 <p>通过判断uri的类型 选择不同的渐近式解释器，local和network都继承自ProgressiveDecoder</p>
 
-<p>在<code>ProgressiveDecoder</code>的构造方法中，doDecode(encodedImage, isLast) 进行解析。而真正解析的则是<code>ImageDecode</code>r#decodeImage方法，这个方法将encodedImage解析成<code>CloseableImage</code>：
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-</pre></td><td class='code'><pre><code class='Java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span> <span class="n">Performs</span> <span class="n">the</span> <span class="n">decode</span> <span class="n">synchronously</span><span class="o">.</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
-</span><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">doDecode</span><span class="o">(</span><span class="n">EncodedImage</span> <span class="n">encodedImage</span><span class="o">,</span> <span class="nd">@Status</span> <span class="kt">int</span> <span class="n">status</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>  <span class="k">if</span> <span class="o">(</span><span class="n">isFinished</span><span class="o">()</span> <span class="o">||</span> <span class="o">!</span><span class="n">EncodedImage</span><span class="o">.</span><span class="na">isValid</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="n">String</span> <span class="n">imageFormatStr</span><span class="o">;</span>
-</span><span class='line'>  <span class="n">ImageFormat</span> <span class="n">imageFormat</span> <span class="o">=</span> <span class="n">encodedImage</span><span class="o">.</span><span class="na">getImageFormat</span><span class="o">();</span>
-</span><span class='line'>  <span class="k">if</span> <span class="o">(</span><span class="n">imageFormat</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">imageFormatStr</span> <span class="o">=</span> <span class="n">imageFormat</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">imageFormatStr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">unknown</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="n">String</span> <span class="n">encodedImageSize</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="n">String</span> <span class="n">sampleSize</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">isLast</span> <span class="o">=</span> <span class="n">isLast</span><span class="o">(</span><span class="n">status</span><span class="o">);</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">isLastAndComplete</span> <span class="o">=</span> <span class="n">isLast</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="o">!</span><span class="n">statusHasFlag</span><span class="o">(</span><span class="n">status</span><span class="o">,</span> <span class="n">IS_PARTIAL_RESULT</span><span class="o">);</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">isPlaceholder</span> <span class="o">=</span> <span class="n">statusHasFlag</span><span class="o">(</span><span class="n">status</span><span class="o">,</span> <span class="n">IS_PLACEHOLDER</span><span class="o">);</span>
-</span><span class='line'>  <span class="k">if</span> <span class="o">(</span><span class="n">encodedImage</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">encodedImageSize</span> <span class="o">=</span> <span class="n">encodedImage</span><span class="o">.</span><span class="na">getWidth</span><span class="o">()</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">x</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;</span> <span class="o">+</span> <span class="n">encodedImage</span><span class="o">.</span><span class="na">getHeight</span><span class="o">();</span>
-</span><span class='line'>    <span class="n">sampleSize</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">.</span><span class="na">getSampleSize</span><span class="o">());</span>
-</span><span class='line'>  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// We should never be here</span>
-</span><span class='line'>    <span class="n">encodedImageSize</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">unknown</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;;</span>
-</span><span class='line'>    <span class="n">sampleSize</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">unknown</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="n">String</span> <span class="n">requestedSizeStr</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="n">ResizeOptions</span> <span class="n">resizeOptions</span> <span class="o">=</span> <span class="n">mProducerContext</span><span class="o">.</span><span class="na">getImageRequest</span><span class="o">().</span><span class="na">getResizeOptions</span><span class="o">();</span>
-</span><span class='line'>  <span class="k">if</span> <span class="o">(</span><span class="n">resizeOptions</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">requestedSizeStr</span> <span class="o">=</span> <span class="n">resizeOptions</span><span class="o">.</span><span class="na">width</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">x</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;</span> <span class="o">+</span> <span class="n">resizeOptions</span><span class="o">.</span><span class="na">height</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">requestedSizeStr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">unknown</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kt">long</span> <span class="n">queueTime</span> <span class="o">=</span> <span class="n">mJobScheduler</span><span class="o">.</span><span class="na">getQueuedTime</span><span class="o">();</span>
-</span><span class='line'>    <span class="kt">long</span> <span class="n">decodeDuration</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">String</span> <span class="n">imageUrl</span> <span class="o">=</span> <span class="n">encodedImage</span><span class="o">.</span><span class="na">getEncodedCacheKey</span><span class="o">().</span><span class="na">getUriString</span><span class="o">();</span>
-</span><span class='line'>    <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">isLastAndComplete</span> <span class="o">||</span> <span class="n">isPlaceholder</span> <span class="o">?</span> <span class="n">encodedImage</span><span class="o">.</span><span class="na">getSize</span><span class="o">()</span> <span class="o">:</span> <span class="n">getIntermediateImageEndOffset</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">QualityInfo</span> <span class="n">quality</span> <span class="o">=</span> <span class="n">isLastAndComplete</span> <span class="o">||</span> <span class="n">isPlaceholder</span> <span class="o">?</span> <span class="n">ImmutableQualityInfo</span><span class="o">.</span><span class="na">FULL_QUALITY</span> <span class="o">:</span> <span class="n">getQualityInfo</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">mProducerListener</span><span class="o">.</span><span class="na">onProducerStart</span><span class="o">(</span><span class="n">mProducerContext</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">PRODUCER_NAME</span><span class="o">);</span>
-</span><span class='line'><span class="n">CloseableImage</span> <span class="n">image</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'><span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kt">long</span> <span class="n">nowTime</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">image</span> <span class="o">=</span> <span class="n">mImageDecoder</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">,</span> <span class="n">length</span><span class="o">,</span> <span class="n">quality</span><span class="o">,</span> <span class="n">mImageDecodeOptions</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">decodeDuration</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">nowTime</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>  <span class="n">Map</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">extraMap</span> <span class="o">=</span> <span class="n">getExtraMap</span><span class="o">(</span><span class="n">image</span><span class="o">,</span> <span class="n">imageUrl</span><span class="o">,</span> <span class="n">queueTime</span><span class="o">,</span> <span class="n">decodeDuration</span><span class="o">,</span> <span class="n">quality</span><span class="o">,</span> <span class="n">isLast</span><span class="o">,</span> <span class="n">imageFormatStr</span><span class="o">,</span> <span class="n">encodedImageSize</span><span class="o">,</span> <span class="n">requestedSizeStr</span><span class="o">,</span> <span class="n">sampleSize</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">mProducerListener</span><span class="o">.</span><span class="na">onProducerFinishWithFailure</span><span class="o">(</span><span class="n">mProducerContext</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">PRODUCER_NAME</span><span class="o">,</span> <span class="n">e</span><span class="o">,</span> <span class="n">extraMap</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">handleError</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
-</span><span class='line'>  <span class="k">return</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="n">Map</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">extraMap</span> <span class="o">=</span> <span class="n">getExtraMap</span><span class="o">(</span><span class="n">image</span><span class="o">,</span> <span class="n">imageUrl</span><span class="o">,</span> <span class="n">queueTime</span><span class="o">,</span> <span class="n">decodeDuration</span><span class="o">,</span> <span class="n">quality</span><span class="o">,</span> <span class="n">isLast</span><span class="o">,</span> <span class="n">imageFormatStr</span><span class="o">,</span> <span class="n">encodedImageSize</span><span class="o">,</span> <span class="n">requestedSizeStr</span><span class="o">,</span> <span class="n">sampleSize</span><span class="o">);</span>
-</span><span class='line'><span class="n">mProducerListener</span><span class="o">.</span><span class="na">onProducerFinishWithSuccess</span><span class="o">(</span><span class="n">mProducerContext</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="n">PRODUCER_NAME</span><span class="o">,</span> <span class="n">extraMap</span><span class="o">);</span>
-</span><span class='line'><span class="n">handleResult</span><span class="o">(</span><span class="n">image</span><span class="o">,</span> <span class="n">status</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-</span><span class='line'><span class="n">EncodedImage</span><span class="o">.</span><span class="na">closeSafely</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">因此我们在</span><span class="err">#</span><span class="n">doDecoder方法在decode前后插入解码时长计算</span><span class="err">。</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>  <span class="kt">long</span> <span class="n">nowTime</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">image</span> <span class="o">=</span> <span class="n">mImageDecoder</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">encodedImage</span><span class="o">,</span> <span class="n">length</span><span class="o">,</span> <span class="n">quality</span><span class="o">,</span> <span class="n">mImageDecodeOptions</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">decodeDuration</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">nowTime</span><span class="o">;</span>
-</span></code></pre></td></tr></table></div></figure></p>
+<p>在<code>ProgressiveDecoder</code>的构造方法中，doDecode(encodedImage, isLast) 进行解析。而真正解析的则是<code>ImageDecode</code>r#decodeImage方法，这个方法将encodedImage解析成<code>CloseableImage</code>：</p>
+
+<pre><code class="java">    /** Performs the decode synchronously. */
+    private void doDecode(EncodedImage encodedImage, @Status int status) {
+      if (isFinished() || !EncodedImage.isValid(encodedImage)) {
+        return;
+      }
+      final String imageFormatStr;
+      ImageFormat imageFormat = encodedImage.getImageFormat();
+      if (imageFormat != null) {
+        imageFormatStr = imageFormat.getName();
+      } else {
+        imageFormatStr = "unknown";
+      }
+      final String encodedImageSize;
+      final String sampleSize;
+      final boolean isLast = isLast(status);
+      final boolean isLastAndComplete = isLast &amp;&amp; !statusHasFlag(status, IS_PARTIAL_RESULT);
+      final boolean isPlaceholder = statusHasFlag(status, IS_PLACEHOLDER);
+      if (encodedImage != null) {
+        encodedImageSize = encodedImage.getWidth() + "x" + encodedImage.getHeight();
+        sampleSize = String.valueOf(encodedImage.getSampleSize());
+      } else {
+        // We should never be here
+        encodedImageSize = "unknown";
+        sampleSize = "unknown";
+      }
+      final String requestedSizeStr;
+      final ResizeOptions resizeOptions = mProducerContext.getImageRequest().getResizeOptions();
+      if (resizeOptions != null) {
+        requestedSizeStr = resizeOptions.width + "x" + resizeOptions.height;
+      } else {
+        requestedSizeStr = "unknown";
+      }
+      try {
+        long queueTime = mJobScheduler.getQueuedTime();
+        long decodeDuration = -1;
+        String imageUrl = encodedImage.getEncodedCacheKey().getUriString();
+        int length = isLastAndComplete || isPlaceholder ? encodedImage.getSize() : getIntermediateImageEndOffset(encodedImage);
+        QualityInfo quality = isLastAndComplete || isPlaceholder ? ImmutableQualityInfo.FULL_QUALITY : getQualityInfo();
+
+        mProducerListener.onProducerStart(mProducerContext.getId(), PRODUCER_NAME);
+        CloseableImage image = null;
+        try {
+          long nowTime = System.currentTimeMillis();
+          image = mImageDecoder.decode(encodedImage, length, quality, mImageDecodeOptions);
+          decodeDuration = System.currentTimeMillis() - nowTime;
+        } catch (Exception e) {
+          Map&lt;String, String&gt; extraMap = getExtraMap(image, imageUrl, queueTime, decodeDuration, quality, isLast, imageFormatStr, encodedImageSize, requestedSizeStr, sampleSize);
+          mProducerListener.onProducerFinishWithFailure(mProducerContext.getId(), PRODUCER_NAME, e, extraMap);
+          handleError(e);
+          return;
+        }
+        Map&lt;String, String&gt; extraMap = getExtraMap(image, imageUrl, queueTime, decodeDuration, quality, isLast, imageFormatStr, encodedImageSize, requestedSizeStr, sampleSize);
+        mProducerListener.onProducerFinishWithSuccess(mProducerContext.getId(), PRODUCER_NAME, extraMap);
+        handleResult(image, status);
+      } finally {
+        EncodedImage.closeSafely(encodedImage);
+      }
+    }
+</code></pre>
+
+<p>因此我们在#doDecoder方法在decode前后插入解码时长计算:</p>
+
+<pre><code class="java">  long nowTime = System.currentTimeMillis();
+  image = mImageDecoder.decode(encodedImage, length, quality, mImageDecodeOptions);
+  decodeDuration = System.currentTimeMillis() - nowTime;
+</code></pre>
 
 <h4>ImageDecoder</h4>
 
@@ -322,9 +259,9 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 
 <h4>ImageFormatChecker</h4>
 
-<p>这个类是根据输入流来确定图片的类型。基本原理是根据头标识去确定类型。根据代码能看出，这里分为几种。
-<code>
-  public static final ImageFormat JPEG = new ImageFormat("JPEG", "jpeg");
+<p>这个类是根据输入流来确定图片的类型。基本原理是根据头标识去确定类型。根据代码能看出，这里分为几种。</p>
+
+<pre><code class="java">  public static final ImageFormat JPEG = new ImageFormat("JPEG", "jpeg");
   public static final ImageFormat PNG = new ImageFormat("PNG", "png");
   public static final ImageFormat GIF = new ImageFormat("GIF", "gif");
   public static final ImageFormat BMP = new ImageFormat("BMP", "bmp");
@@ -333,8 +270,9 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
   public static final ImageFormat WEBP_EXTENDED = new ImageFormat("WEBP_EXTENDED", "webp");
   public static final ImageFormat WEBP_EXTENDED_WITH_ALPHA = new ImageFormat("WEBP_EXTENDED_WITH_ALPHA", "webp");
   public static final ImageFormat WEBP_ANIMATED = new ImageFormat("WEBP_ANIMATED", "webp");
-</code>
-本篇我们关心以下几种：
+</code></pre>
+
+<p>本篇我们关心以下几种：
 - JPEG
 - WEBP_SIMPLE
 - GIF
@@ -347,34 +285,22 @@ Fresco also supports webp for older OS versions. The only thing you need to do i
 <h4>AnimatedImageFactory</h4>
 
 <p>AnimatedImageFactory是一个接口，他的实现类是AnimatedImageFactoryImpl。
-在这个类的静态方法块种，通过如下代码 来构造其他依赖包中的对象，这个小技巧我们可以get一下。
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='Java'><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">AnimatedImageDecoder</span> <span class="nf">loadIfPresent</span><span class="o">(</span><span class="kd">final</span> <span class="n">String</span> <span class="n">className</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">Class</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?&gt;</span> <span class="n">clazz</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
-</span><span class='line'>      <span class="k">return</span> <span class="o">(</span><span class="n">AnimatedImageDecoder</span><span class="o">)</span> <span class="n">clazz</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>  <span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>  <span class="kd">static</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">sGifAnimatedImageDecoder</span> <span class="o">=</span> <span class="n">loadIfPresent</span><span class="o">(&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">com</span><span class="o">.</span><span class="na">facebook</span><span class="o">.</span><span class="na">animated</span><span class="o">.</span><span class="na">gif</span><span class="o">.</span><span class="na">GifImage</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;);</span>
-</span><span class='line'>    <span class="n">sWebpAnimatedImageDecoder</span> <span class="o">=</span> <span class="n">loadIfPresent</span><span class="o">(&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">com</span><span class="o">.</span><span class="na">facebook</span><span class="o">.</span><span class="na">animated</span><span class="o">.</span><span class="na">webp</span><span class="o">.</span><span class="na">WebPImage</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="o">;);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure></p>
+在这个类的静态方法块种，通过如下代码 来构造其他依赖包中的对象，这个小技巧我们可以get一下。</p>
+
+<pre><code>  private static AnimatedImageDecoder loadIfPresent(final String className) {
+    try {
+      Class&lt;?&gt; clazz = Class.forName(className);
+      return (AnimatedImageDecoder) clazz.newInstance();
+    } catch (Throwable e) {
+      return null;
+    }
+  }
+
+  static {
+    sGifAnimatedImageDecoder = loadIfPresent("com.facebook.animated.gif.GifImage");
+    sWebpAnimatedImageDecoder = loadIfPresent("com.facebook.animated.webp.WebPImage");
+  }
+</code></pre>
 
 <p>AnimatedImageDecoder又分别有两个实现：
 - <code>WebpImage</code>
@@ -397,7 +323,7 @@ getCloseableImage的逻辑如下：
 
 <p><img src="http://upload-images.jianshu.io/upload_images/76332-37a7a0bdcb84bc8f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="PlatformDecoder具体实现" /></p>
 
-<pre><code>public interface PlatformDecoder {
+<pre><code class="java">public interface PlatformDecoder {
   /**
    * Creates a bitmap from encoded bytes. Supports JPEG but callers should use {@link
    * #decodeJPEGFromEncodedImage} for partial JPEGs.
@@ -435,7 +361,7 @@ pinBitmap 真正的decode
 
 <p><code>NetworkFetchProducer</code>负责从网络层获取图片流，持有<code>NetworkFetcher</code>的实现类；测试代码中，我们添加了OkHttp3的<code>OkHttpNetworkFetcher</code>作为fetcher；我们关心<code>NetworkFetchProducer</code>中的这个方法：</p>
 
-<pre><code>  private void handleFinalResult(PooledByteBufferOutputStream pooledOutputStream, FetchState fetchState) {
+<pre><code class="java">  private void handleFinalResult(PooledByteBufferOutputStream pooledOutputStream, FetchState fetchState) {
     Map&lt;String, String&gt; extraMap = getExtraMap(fetchState, pooledOutputStream.size());
     ProducerListener listener = fetchState.getListener();
     listener.onProducerFinishWithSuccess(fetchState.getId(), PRODUCER_NAME, extraMap);
@@ -459,7 +385,7 @@ void onProducerFinishWithSuccess(String requestId, String producerName, @Nullabl
 
 <p>该方法会在<code>Producer</code>结束时回调出来，我们利用Fresco包里的<code>RequestLoggingListener</code>，便可监听到<code>DecoderProducer</code>和<code>NetworkFetchProducer</code>的回调。</p>
 
-<pre><code>    @Override
+<pre><code class="java">    @Override
     public void onCreate() {
         super.onCreate();
         FLog.setMinimumLoggingLevel(FLog.VERBOSE);
@@ -475,9 +401,9 @@ void onProducerFinishWithSuccess(String requestId, String producerName, @Nullabl
     }
 </code></pre>
 
-<p>我们通过在Fresco初始化Builder中加入<code>RequestLoggingListener</code>，并改造<code>RequestLoggingListener</code>的onProducerFinishWithSuccess方法:
-<code>
-  @Override
+<p>我们通过在Fresco初始化Builder中加入<code>RequestLoggingListener</code>，并改造<code>RequestLoggingListener</code>的onProducerFinishWithSuccess方法:</p>
+
+<pre><code class="java">  @Override
   public synchronized void onProducerFinishWithSuccess(String requestId, String producerName, @Nullable Map&lt;String, String&gt; extraMap) {
     if (FLog.isLoggable(FLog.VERBOSE)) {
       Pair&lt;String, String&gt; mapKey = Pair.create(requestId, producerName);
@@ -490,32 +416,38 @@ void onProducerFinishWithSuccess(String requestId, String producerName, @Nullabl
       }
     }
   }
-</code>
-通过将Producer的信息回调给外面，至此我们就拿到了每一个Producer的回调信息，通过producerName的过滤就可以拿到关心的信息，这里我们关心<code>DecoderProducer</code>和<code>NetworkFetchProducer</code>的信息。</p>
+</code></pre>
+
+<p>通过将Producer的信息回调给外面，至此我们就拿到了每一个Producer的回调信息，通过producerName的过滤就可以拿到关心的信息，这里我们关心<code>DecoderProducer</code>和<code>NetworkFetchProducer</code>的信息。</p>
 
 <h3>decode时间计算</h3>
 
-<p>在<code>DecoderProducer</code>的doDecode方法中插入:
-<code>
- long nowTime = System.currentTimeMillis();
+<p>在<code>DecoderProducer</code>的doDecode方法中插入:</p>
+
+<pre><code class="java"> long nowTime = System.currentTimeMillis();
  image = mImageDecoder.decode(encodedImage, length, quality, mImageDecodeOptions);
  decodeDuration = System.currentTimeMillis() - nowTime;
-</code>
-decodeDuration放入onProducerFinishWithSuccess的extraMap当中</p>
+</code></pre>
+
+<p>decodeDuration放入onProducerFinishWithSuccess的extraMap当中</p>
 
 <h3>network fecther时间计算</h3>
 
-<p><code>OkHttpNetworkFetcher</code>中定义着几个常量值：
-<code>
-  public static final String QUEUE_TIME = "resp_time"; //修改为响应时间
+<p><code>OkHttpNetworkFetcher</code>中定义着几个常量值：</p>
+
+<pre><code class="java">  public static final String QUEUE_TIME = "resp_time"; //修改为响应时间
   public static final String FETCH_TIME = "fetch_time";
   public static final String TOTAL_TIME = "total_time";
   public static final String IMAGE_SIZE = "image_size";
   public static final String IMAGE_URL = "image_url"; //新增
-</code>
-- <code>QUEUE_TIME</code>为请求丢入请求线程池到最后请求成功响应的时间
-- <code>FETCH_TIME</code>为从response读完IO流的时间
-- <code>IMAGE_SIZE</code>为response header中的content-length，即图片大小</p>
+</code></pre>
+
+<ul>
+<li><code>QUEUE_TIME</code>为请求丢入请求线程池到最后请求成功响应的时间</li>
+<li><code>FETCH_TIME</code>为从response读完IO流的时间</li>
+<li><code>IMAGE_SIZE</code>为response header中的content-length，即图片大小</li>
+</ul>
+
 
 <p>这些数据都最终会被丢入extraMap，回调给外面。</p>
 
@@ -523,7 +455,10 @@ decodeDuration放入onProducerFinishWithSuccess的extraMap当中</p>
 
 <h2>jpg&amp;webp指标对比:</h2>
 
-<p><img src="http://upload-images.jianshu.io/upload_images/76332-f960ec0cb0bed228.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="jpg webp指标对比" /></p>
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-f960ec0cb0bed228.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="400" height="400" alt="jpg webp指标对比"/>
+</div>
+
 
 <table>
 <thead>
@@ -568,7 +503,10 @@ decodeDuration放入onProducerFinishWithSuccess的extraMap当中</p>
 
 <h2>gif&amp;anim-webp指标对比:</h2>
 
-<p><img src="http://upload-images.jianshu.io/upload_images/76332-114e6bf70693178d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gif&amp;anim-webp指标对比" /></p>
+<div align=center>
+<img src="http://upload-images.jianshu.io/upload_images/76332-114e6bf70693178d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" width="400" height="400" alt="gif&anim-webp指标对比"/>
+</div>
+
 
 <table>
 <thead>
@@ -610,16 +548,19 @@ decodeDuration放入onProducerFinishWithSuccess的extraMap当中</p>
 <p><a href="http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg">http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg</a>
 <a href="http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg?imageView=1&amp;type=webp&amp;tostatic=0">http://p1.music.126.net/rhGo28bJP19-T0xmtpg6jw==/19244752021149272.jpg?imageView=1&amp;type=webp&amp;tostatic=0</a></p>
 
-<p>size压缩对比也接近1：3；另外这里的解码时间是不准确的，因为webp与gif在fresco中都是<code>AnimatedImage</code>，他们的decode调的是nativeCreateFromNativeMemory方法，这个方法返回是对应的<code>WebPImage</code> 与<code>GifImage</code>对象，表中的解码时间也是构建这个对象的耗时；动图渲染时，主要调用的是<code>AnimatedDrawableBackendImpl</code>中renderFrame方法。但我们可以粗略认为，每一帧的渲染耗时对比，接近jpg与webp的耗时；因为gif与anim-webp分别是由一帧一帧的jpg与webp组成。</p>
+<h2>size压缩对比也接近1：3；另外这里的解码时间是不准确的，因为webp与gif在fresco中都是<code>AnimatedImage</code>，他们的decode调的是nativeCreateFromNativeMemory方法，这个方法返回是对应的<code>WebPImage</code> 与<code>GifImage</code>对象，表中的解码时间也是构建这个对象的耗时；动图渲染时，主要调用的是<code>AnimatedDrawableBackendImpl</code>中renderFrame方法。但我们可以粗略认为，每一帧的渲染耗时对比，接近jpg与webp的耗时；因为gif与anim-webp分别是由一帧一帧的jpg与webp组成。</h2>
 
 <h1>总结</h1>
 
-<p>webp与jpg相比，包括anim-webp与gif， 在相同的图片质量，图片大小上，webp有着巨大的优势，解码速度毫秒级的差距也完全在接收范围内， 而图片大小最终转化为带宽、存储空间、加载速度上的优势。因此在有条件的情况，app中完全可以用webp来替代jpg格式以提升加载速度、降低存储空间、节省带宽费用。另外在android上，使用fresco作为图片库，可以几乎无成本的接入webp。</p>
+<h2>webp与jpg相比，包括anim-webp与gif， 在相同的图片质量，图片大小上，webp有着巨大的优势，解码速度毫秒级的差距也完全在接收范围内， 而图片大小最终转化为带宽、存储空间、加载速度上的优势。因此在有条件的情况，app中完全可以用webp来替代jpg格式以提升加载速度、降低存储空间、节省带宽费用。另外在android上，使用fresco作为图片库，可以几乎无成本的接入webp。</h2>
 
-<p>参考
-1.<a href="http://changety.github.io/blog/2016/01/31/webp-research/">http://changety.github.io/blog/2016/01/31/webp-research/</a>
-2.<a href="https://developers.google.com/speed/webp/faq">https://developers.google.com/speed/webp/faq</a>
-3.<a href="https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/">https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/</a></p>
+<h1>参考</h1>
+
+<p>webp图片介绍 <a href="http://changety.github.io/blog/2016/01/31/webp-research/">http://changety.github.io/blog/2016/01/31/webp-research/</a></p>
+
+<p>webp常见问题 <a href="https://developers.google.com/speed/webp/faq">https://developers.google.com/speed/webp/faq</a></p>
+
+<p>fresco decode过程 <a href="https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/">https://guolei1130.github.io/2016/12/13/fresco%E5%9B%BE%E7%89%87decode%E7%9A%84%E5%A4%A7%E4%BD%93%E6%B5%81%E7%A8%8B/</a></p>
 ]]></content>
   </entry>
   
