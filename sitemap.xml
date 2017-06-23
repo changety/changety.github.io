@@ -3,6 +3,14 @@
   
   
   <url>
+    <loc>http://changety.github.io/blog/2017/06/20/fresco-jpg-webp-decode/</loc>
+    
+    <lastmod>2017-06-20T16:04:07+08:00</lastmod>
+    
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
     <loc>http://changety.github.io/blog/2016/01/31/webp-research/</loc>
     
     <lastmod>2016-01-31T16:04:07+08:00</lastmod>
@@ -45,35 +53,35 @@
   
   <url>
     <loc>http://changety.github.io/archives/</loc>
-    <lastmod>2016-10-26T16:47:42+08:00</lastmod>
+    <lastmod>2017-06-23T14:31:34+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://changety.github.io/blog/archives/</loc>
-    <lastmod>2016-10-26T16:47:42+08:00</lastmod>
+    <lastmod>2017-06-23T14:31:34+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://changety.github.io/blog/</loc>
-    <lastmod>2016-10-26T16:47:42+08:00</lastmod>
+    <lastmod>2017-06-23T14:31:34+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://changety.github.io/</loc>
-    <lastmod>2016-10-26T16:47:42+08:00</lastmod>
+    <lastmod>2017-06-23T14:31:34+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>http://changety.github.io/aboutme/</loc>
-    <lastmod>2016-10-26T16:47:42+08:00</lastmod>
+    <lastmod>2017-06-23T14:31:34+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
